@@ -4,7 +4,7 @@
   "description": "A tiny key value API for indexeddb with automatic batching for out of the box performance.",
   "main": "index.js",
   "scripts": {
-    "test": "browserify test.js | tape-run"
+    "test": "standard && browserify test.js | tape-run"
   },
   "keywords": [
     "idb",
