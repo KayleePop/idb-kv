@@ -24,6 +24,8 @@ class Idbkv {
     //   request: (pending ObjectStoreRequest for get())
     // }
 
+    this.closed = false
+
     // promise for the completion of the next batch transaction
     this._batchPromise = new Promise((resolve, reject) => {
       this._resolveBatch = resolve
