@@ -24,15 +24,11 @@ test('set then get', async (t) => {
   t.equals(value2, 'value2', 'same transaction')
 })
 
-test('error on get nonexistent key', async (t) => {
+test('get nonexistent key', async (t) => {
   let store = await setupStore('undefinedGetTest')
 
-  try {
-    await store.get('key')
-    t.fail('get on nonexistent key should throw error')
-  } catch (err) {
-    t.equals(err.message, 'Key:key does not exist in db:undefinedGetTest')
-  }
+  let value = await store.get('key')
+  t.equals(value, undefined, 'should be undefined')
 })
 
 test('data should persist to a new instance', async (t) => {
@@ -77,12 +73,8 @@ test('order is preserved in batch', async (t) => {
     .then((value) => t.equals(value, 'overwrite'))
     .catch(err => t.error(err))
   store.delete('key')
-  try {
-    await store.get('key')
-    t.fail('error for nonexistant key should be thrown')
-  } catch (err) {
-    t.equals(err.message, 'Key:key does not exist in db:orderTest')
-  }
+  let value = await store.get('key')
+  t.equals(value, undefined)
 })
 
 test('store an array', async (t) => {
@@ -99,12 +91,8 @@ test('delete a key', async (t) => {
 
   store.set('key', 'value')
   store.delete('key')
-  try {
-    await store.get('key')
-    t.fail('error for nonexistant key should be thrown')
-  } catch (err) {
-    t.equals(err.message, 'Key:key does not exist in db:deleteTest')
-  }
+  let value = await store.get('key')
+  t.equals(value, undefined)
 })
 
 test('destroy a store', async (t) => {
@@ -116,26 +104,9 @@ test('destroy a store', async (t) => {
   await store.destroy()
   store = new Idbkv('destroyTest')
 
-  try {
-    await store.get('key1')
-    t.fail('error for nonexistant key should be thrown')
-  } catch (err) {
-    t.equals(err.message, 'Key:key1 does not exist in db:destroyTest')
-  }
-
-  try {
-    await store.get('key2')
-    t.fail('error for nonexistant key should be thrown')
-  } catch (err) {
-    t.equals(err.message, 'Key:key2 does not exist in db:destroyTest')
-  }
-
-  try {
-    await store.get('key3')
-    t.fail('error for nonexistant key should be thrown')
-  } catch (err) {
-    t.equals(err.message, 'Key:key3 does not exist in db:destroyTest')
-  }
+  t.equals(await store.get('key1'), undefined)
+  t.equals(await store.get('key2'), undefined)
+  t.equals(await store.get('key3'), undefined)
 })
 
 test('seperate stores should not interact', async (t) => {

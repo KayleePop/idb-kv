@@ -116,14 +116,7 @@ class Idbkv {
       switch (action.type) {
         case 'get':
           let request = store.get(action.key)
-          request.onsuccess = () => {
-            let value = request.result
-            if (value === undefined) {
-              action.reject(new Error(`Key:${action.key} does not exist in db:${db.name}`))
-            } else {
-              action.resolve(value)
-            }
-          }
+          request.onsuccess = () => action.resolve(request.result)
           break
         case 'set':
           store.put(action.value, action.key)

@@ -89,13 +89,12 @@ Create a new Idbkv store instance using `IndexedDB.open(dbName)` for data. Two i
 ```javascript
 store.get('animals').then(animals => console.log(animals[2]))
 
-store.get('nonexistant').catch(err => console.error(err))
-// err.message is "Key:nonexistant does not exist in db:example-store"
+store.get('nonexistent').then(value => console.log(value)) // logs "undefined"
 ```
 
 Returns a promise that resolves with the value corresponding to `key`, or rejects due to errors thrown by indexedDB.
 
-The promise is also rejected if `key` does not exist in the store.
+If the key doesn't exist in the database, then get() resolves with `undefined`.
 
 ### _async_ set(key, value)
 
@@ -114,9 +113,9 @@ Returns a promise that resolves when the data is successfully written to the dis
 
 ```javascript
 let store = new Idbkv('example-store')
+store.set('pastas', ['spaghetti', 'linguine', 'macaroni', 'fettuccine'])
 store.delete('pastas')
-store.get('pastas').catch(err => console.error(err))
-// err.message is "Key:pastas does not exist in db:example-store"
+store.get('pastas').then(value => console.log(value)) // logs "undefined"
 ```
 
 Returns a promise that resolves when the data is successfully deleted from the disk or rejects on indexedDB errors.
@@ -147,8 +146,7 @@ store.get('color').then(color => console.log(color)) // logs "blue"
 await store.destroy()
 
 store = new Idbkv('example-store')
-store.get('color').catch(err => console.error(err))
-// err.message is "Key:color does not exist in db:example-store"
+store.get('color').then(color => console.log(color)) // logs "undefined"
 ```
 
 Calls `store.close()`, then deletes the underlying indexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
