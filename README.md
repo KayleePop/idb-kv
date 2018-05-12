@@ -56,15 +56,16 @@ store.set(1, 'second')
 store.set(2, 'third')
 store.set(3, 'fourth')
 store.delete(3)
-  .then(() => console.log('all 4 sets and the delete completed successfully'))
+  .then(() => console.log('all 4 sets and delete completed successfully'))
 ```
 
 The order of actions is maintained when batching.
 
 ```javascript
 store.delete(0)
+store.get(0).then(value => console.log(value)) // logs undefined
 store.set(0, 'first')
-store.get(0).then(value => console.log(value)) // always logs "first"
+store.get(0).then(value => console.log(value)) // logs "first"
 ```
 
 ## API
