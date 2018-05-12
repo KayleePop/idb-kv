@@ -21,7 +21,6 @@ class Idbkv {
     //   value:
     //   resolve: (resolve get() promise)
     //   reject: (reject get() promise)
-    //   request: (pending ObjectStoreRequest for get())
     // }
 
     this.closed = false
