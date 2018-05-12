@@ -117,6 +117,7 @@ class Idbkv {
         case 'get':
           let request = store.get(action.key)
           request.onsuccess = () => action.resolve(request.result)
+          request.onerror = () => action.reject(request.error)
           break
         case 'set':
           store.put(action.value, action.key)
