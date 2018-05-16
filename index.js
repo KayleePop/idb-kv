@@ -23,6 +23,7 @@ class Idbkv {
     //   reject: (reject get() promise)
     // }
 
+    // new actions will be cancelled if closed is true
     this.closed = false
 
     // promise for the completion of the next batch transaction
@@ -31,7 +32,7 @@ class Idbkv {
       this._rejectBatch = reject
     })
 
-    // promise for the return value from setInterval for batching
+    // promise for the return value of the setInterval used for batching
     this._batchTimer = this._startBatchTimer()
   }
   // returns promise
