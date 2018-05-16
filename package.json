@@ -1,6 +1,6 @@
 {
   "name": "idb-kv",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A tiny key value API for indexeddb with automatic batching for out of the box performance.",
   "scripts": {
     "test": "standard && browserify test.js | tape-run"
@@ -17,6 +17,11 @@
   ],
   "author": "KayleePop",
   "license": "MIT",
+  "repository": "https://github.com/kayleepop/idb-kv.git",
+  "bugs": {
+    "type": "git",
+    "url": "https://github.com/kayleepop/idb-kv/issues"
+  },
   "devDependencies": {
     "browserify": "^16.2.0",
     "standard": "^11.0.1",
