@@ -42,10 +42,6 @@ let store = new Idbkv('example-store')
 store.get('pastas').then(pastas => console.log(pastas[1])) // logs "linguine"
 ```
 
-## Compatibility
-
-Async functions and ES6 syntax are used, so be sure to transpile and shim if you need to support Internet Explorer.
-
 ## Batching
 
 Because actions are queued and executed in a single transaction every 10ms, you only have to listen to a single promise for every set or delete in each synchronous block of code. This simplifies code and also provides a performance benefit by reducing promise overhead.
