@@ -5,7 +5,8 @@ class Idbkv {
 
     // Promise for the indexeddb DB object
     this.db = new Promise((resolve, reject) => {
-      let request = window.indexedDB.open(dbName, 1)
+      // use global scope to support web workers
+      let request = indexedDB.open(dbName, 1) // eslint-disable-line
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
 
