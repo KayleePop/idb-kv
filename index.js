@@ -91,10 +91,11 @@ class Idbkv {
     db.close()
   }
   async destroy () {
+    // the deletion will wait for db.close() to finish even if it's waiting for a transaction
     await this.close()
 
-    // the deletion will wait for db.close() to finish even if it's waiting for a transaction
-    let request = indexedDB.deleteDatabase((await this.db).name) // eslint-disable-line global for webworkers
+    // use global to allow use in web workers
+    let request = indexedDB.deleteDatabase((await this.db).name) // eslint-disable-line
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
