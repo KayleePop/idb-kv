@@ -8,7 +8,17 @@ class Idbkv {
       // use global scope to support web workers
       let request = indexedDB.open(dbName, 1) // eslint-disable-line
       request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
+      request.onerror = () => {
+        this.closed = true
+
+        // reject all actions
+        for (let action of this._actions) if (action.reject) action.reject()
+        this._rejectBatch()
+
+        this._actions = null
+
+        reject(request.error)
+      }
 
       // if db doesn't already exist
       request.onupgradeneeded = () => request.result.createObjectStore(this.storeName)
