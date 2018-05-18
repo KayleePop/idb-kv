@@ -12,8 +12,8 @@ class Idbkv {
         this.closed = true
 
         // reject all actions
-        for (let action of this._actions) if (action.reject) action.reject()
-        this._rejectBatch()
+        for (let action of this._actions) if (action.reject) action.reject(request.error)
+        this._rejectBatch(request.error)
 
         this._actions = null
 
