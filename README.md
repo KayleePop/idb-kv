@@ -122,14 +122,15 @@ Returns a promise that resolves when the data is successfully deleted from the d
 #### Tear down the Idbkv instance
 
 ```javascript
+store.get('animals', value => console.log(value[3])) // logs moose
 store.close()
-store.get('anyKey').catch(err => console.error(err))
+store.get('animals').catch(err => console.error(err))
 // err.message is "This Idbkv instance is closed"
 ```
 
-Clears the setInterval() used for batching, closes the indexedDB database, and causes any gets, sets, or deletes performed afterwards to reject.
+Clears the setInterval() used for batching, closes the indexedDB database, and causes any gets, sets, or deletes performed afterwards to reject. Actions that were performed before the close but are still in the queue will finish normally in one final batch transaction.
 
-Resolves after a final batch transaction to drain the queue is started, but before it completes or fails.
+Resolves after the final batch transaction to drain the queue is started, but before it completes or fails.
 
 If you're creating lots of new unique Idbkv instances, then you should close them when they're no longer needed to free up their memory, but otherwise this method should never be needed as the impact for each instance is negligible, and closing indexedDB databases isn't important.
 
