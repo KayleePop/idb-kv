@@ -46,7 +46,6 @@ class Idbkv {
     // promise for the return value of the setInterval used for batching
     this._batchTimer = this._startBatchTimer()
   }
-  // returns promise
   async get (key) {
     if (this.closed) throw new Error('This Idbkv instance is closed')
     return new Promise((resolve, reject) => {
@@ -58,7 +57,6 @@ class Idbkv {
       })
     })
   }
-  // returns promise
   async set (key, value) {
     if (this.closed) throw new Error('This Idbkv instance is closed')
     this._actions.push({
@@ -68,7 +66,6 @@ class Idbkv {
     })
     return this._batchPromise
   }
-  // returns promise
   async delete (key) {
     if (this.closed) throw new Error('This Idbkv instance is closed')
     this._actions.push({
