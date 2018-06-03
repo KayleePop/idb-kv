@@ -127,8 +127,10 @@ test('seperate stores should not interact', async (t) => {
 
 test('closed instance rejects new actions', async (t) => {
   let store = await setupStore('closedTest')
+  t.plan(6)
 
   store.close()
+  // try catch await style
   try {
     await store.get('key')
     t.fail('get() on a closed instance should throw error')
@@ -147,4 +149,11 @@ test('closed instance rejects new actions', async (t) => {
   } catch (err) {
     t.equals(err.message, 'This Idbkv instance is closed')
   }
+  // .catch style
+  store.get('key')
+    .catch(err => t.equals(err.message, 'This Idbkv instance is closed'))
+  store.set('key', 'value')
+    .catch(err => t.equals(err.message, 'This Idbkv instance is closed'))
+  store.delete('key')
+    .catch(err => t.equals(err.message, 'This Idbkv instance is closed'))
 })
