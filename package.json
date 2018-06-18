@@ -23,9 +23,9 @@
     "url": "https://github.com/kayleepop/idb-kv/issues"
   },
   "devDependencies": {
-    "browserify": "^16.2.0",
+    "browserify": "^16.2.2",
     "standard": "^11.0.1",
-    "tape": "^4.9.0",
+    "tape": "^4.9.1",
     "tape-promise": "^3.0.0",
     "tape-run": "^4.0.0"
   }
