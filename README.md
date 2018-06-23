@@ -130,7 +130,7 @@ store.get('animals').catch(err => console.error(err))
 
 Clears the setInterval() used for batching, closes the indexedDB database, and causes any gets, sets, or deletes performed afterwards to reject. Actions that were performed before the close but are still in the queue will finish normally in one final batch transaction.
 
-Resolves after the final batch transaction to drain the queue is started, but before it completes or fails.
+Resolves after the final batch transaction succeeds or fails and the indexedDB database is closed.
 
 If you're creating lots of new unique Idbkv instances, then you should close them when they're no longer needed to free up their memory, but otherwise this method should never be needed as the impact for each instance is negligible, and closing indexedDB databases isn't important.
 

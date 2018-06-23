@@ -79,16 +79,13 @@ module.exports = class {
 
     clearInterval(await this._batchTimer)
 
+    // final commit to drain queue of actions executed before close
+    await this._commit()
+
     let db = await this.db
-
-    // commit any leftover pending actions
-    // db.close() will wait for the transaction to complete
-    this._commit(db)
-
     db.close()
   }
   async destroy () {
-    // the deletion will wait for db.close() to finish even if it's waiting for a transaction
     await this.close()
 
     // use global to allow use in web workers
@@ -99,13 +96,15 @@ module.exports = class {
     })
   }
   async _startBatchTimer () {
-    let db = await this.db
+    // first commit right after db is ready and before any delay
+    await this.db
+    this._commit()
 
     // wrapping _commit() in an arrow function is necessary to preserve lexical scope
-    return setInterval(() => this._commit(db), this.batchInterval)
+    return setInterval(() => this._commit(), this.batchInterval)
   }
   // commit all of the pending gets, sets, and deletes to the db
-  _commit (db) {
+  async _commit () {
     if (this._actions.length === 0) return
 
     let commitedActions = this._actions
@@ -118,7 +117,7 @@ module.exports = class {
       this._rejectBatch = reject
     })
 
-    let transaction = db.transaction(this.storeName, 'readwrite')
+    let transaction = (await this.db).transaction(this.storeName, 'readwrite')
     let store = transaction.objectStore(this.storeName)
 
     for (let action of commitedActions) {
@@ -137,11 +136,18 @@ module.exports = class {
       }
     }
 
-    transaction.oncomplete = () => resolveBatch()
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        resolveBatch()
+        resolve()
+      }
 
-    transaction.onerror = transaction.onabort = (error) => {
-      // onabort uses an argument to pass the error, but onerror uses transaction.error
-      rejectBatch(transaction.error || error)
-    }
+      transaction.onerror = transaction.onabort = (error) => {
+        // onabort uses an argument to pass the error, but onerror uses transaction.error
+        rejectBatch(transaction.error || error)
+
+        resolve() // commit succeeded even though transaction failed
+      }
+    })
   }
 }
