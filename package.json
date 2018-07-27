@@ -1,6 +1,6 @@
 {
   "name": "idb-kv",
-  "version": "1.2.5",
+  "version": "1.3.0",
   "description": "A tiny key value API for indexeddb with automatic batching for out of the box performance.",
   "scripts": {
     "test": "standard && browserify test.js | tape-run"
