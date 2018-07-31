@@ -1,5 +1,5 @@
 module.exports = class {
-  constructor (dbName, {batchInterval} = {batchInterval: 10}) {
+  constructor (dbName, {batchInterval = 10} = {}) {
     this.storeName = 'idb-kv'
     this.batchInterval = batchInterval
 
