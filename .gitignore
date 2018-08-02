@@ -36,6 +36,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# lockfile isn't necessary for this minimal dev setup, and it clogs git diffs
+package-lock.json
+
 # Typescript v1 declaration files
 typings/
 
