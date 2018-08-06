@@ -9,15 +9,18 @@ module.exports = class {
       let request = indexedDB.open(dbName, 1) // eslint-disable-line
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
+        let error = request.error
+
         this.closed = true
+        this.closedError = error
 
         // reject all actions
-        for (let action of this._actions) if (action.reject) action.reject(request.error)
-        this._rejectBatch(request.error)
+        for (let action of this._actions) if (action.reject) action.reject(error)
+        this._rejectBatch(error)
 
         this._actions = null
 
-        reject(request.error)
+        reject(error)
       }
 
       // if db doesn't already exist
@@ -37,6 +40,9 @@ module.exports = class {
     // new actions will be cancelled if closed is true
     this.closed = false
 
+    // error used for rejections of new actions when the store is closed
+    this.closedError = new Error('This Idbkv instance is closed')
+
     // promise for the completion of the next batch transaction
     this._batchPromise = new Promise((resolve, reject) => {
       this._resolveBatch = resolve
@@ -47,7 +53,7 @@ module.exports = class {
     this._batchTimer = this._startBatchTimer()
   }
   async get (key) {
-    if (this.closed) throw new Error('This Idbkv instance is closed')
+    if (this.closed) throw this.closedError
     return new Promise((resolve, reject) => {
       this._actions.push({
         type: 'get',
@@ -58,7 +64,7 @@ module.exports = class {
     })
   }
   async set (key, value) {
-    if (this.closed) throw new Error('This Idbkv instance is closed')
+    if (this.closed) throw this.closedError
     this._actions.push({
       type: 'set',
       key: key,
@@ -67,7 +73,7 @@ module.exports = class {
     return this._batchPromise
   }
   async delete (key) {
-    if (this.closed) throw new Error('This Idbkv instance is closed')
+    if (this.closed) throw this.closedError
     this._actions.push({
       type: 'delete',
       key: key
