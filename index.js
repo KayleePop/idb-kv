@@ -9,7 +9,7 @@ module.exports = class {
       let request = indexedDB.open(dbName, 1) // eslint-disable-line
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
-        let error = request.error
+        let error = new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`)
 
         this.closed = true
         this.closedError = error
