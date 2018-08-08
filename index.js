@@ -6,17 +6,17 @@ module.exports = class {
     // Promise for the indexeddb DB object
     this.db = new Promise((resolve, reject) => {
       // use global scope to support web workers
-      let request = indexedDB.open(dbName, 1) // eslint-disable-line
+      const request = indexedDB.open(dbName, 1) // eslint-disable-line
 
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
-        let error = new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`)
+        const error = new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`)
 
         this.closed = true
         this.closedError = error
 
         // reject queued gets
-        for (let action of this._actions) if (action.reject) action.reject(error)
+        for (const action of this._actions) if (action.reject) action.reject(error)
 
         this._actions = null
 
@@ -91,7 +91,7 @@ module.exports = class {
     // wait for any queued actions to be committed
     if (this._commitPromise) await this._commitPromise
 
-    let db = await this.db
+    const db = await this.db
     db.close()
   }
 
@@ -99,7 +99,7 @@ module.exports = class {
     await this.close()
 
     // use global to allow use in web workers
-    let request = indexedDB.deleteDatabase((await this.db).name) // eslint-disable-line
+    const request = indexedDB.deleteDatabase((await this.db).name) // eslint-disable-line
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
@@ -115,18 +115,18 @@ module.exports = class {
   // wait for the batchInterval, then commit the queued actions to the database
   async _commit () {
     // the first queue lasts until the db is opened
-    let db = await this.db
+    const db = await this.db
 
     // wait batchInterval milliseconds for more actions
     await new Promise(resolve => setTimeout(resolve, this.batchInterval))
 
-    let transaction = db.transaction(this.storeName, 'readwrite')
-    let store = transaction.objectStore(this.storeName)
+    const transaction = db.transaction(this.storeName, 'readwrite')
+    const store = transaction.objectStore(this.storeName)
 
-    for (let action of this._actions) {
+    for (const action of this._actions) {
       switch (action.type) {
         case 'get':
-          let request = store.get(action.key)
+          const request = store.get(action.key)
           request.onsuccess = () => action.resolve(request.result)
           request.onerror = () => action.reject(request.error)
           break
