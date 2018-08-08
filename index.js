@@ -89,7 +89,10 @@ module.exports = class {
     this.closed = true
 
     // wait for any queued actions to be committed
-    if (this._commitPromise) await this._commitPromise
+    // ignore errors, the final transaction just needs to finish
+    try {
+      if (this._commitPromise) await this._commitPromise
+    } catch (e) {}
 
     const db = await this.db
     db.close()
