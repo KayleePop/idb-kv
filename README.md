@@ -4,9 +4,9 @@
 
 ## IndexedDB Key Value Store
 
-A tiny and simple API for indexeddb with automatic batching for out of the box performance.
+A tiny and simple API for IndexedDB with automatic batching for out of the box performance.
 
-Actions are queued and performed in a batch transaction every 10ms. This improves performance when lots of reads and/or writes are performed quickly.
+All operations called within a 10ms interval are queued and executed in a single batch transaction. This improves performance when lots of reads and/or writes are performed quickly.
 
 ## Goals
 
@@ -37,14 +37,16 @@ store.get('animals').then(animals => console.log(animals[2])) // logs "koala"
 // new Session
 let Idbkv = require('idb-kv')
 
-let store = new Idbkv('example-store')
+let store = new Idbkv('example-store') // using the same name loads previous data
 
 store.get('pastas').then(pastas => console.log(pastas[1])) // logs "linguine"
 ```
 
 ## Batching
 
-Because actions are queued and executed in a single transaction every 10ms, you only have to listen to a single promise for every set or delete in each synchronous block of code. This simplifies code and also provides a performance benefit by reducing promise overhead.
+Because actions are batched, you only have to listen to a single promise for every set or delete in a synchronous block of code because they all share a common promise that indicates the success or failure of the entire batch transaction.
+
+This may provide a performance benefit with a large number of writes by eliminating promise handler overhead.
 
 ```javascript
 store.set(0, 'first')
@@ -71,13 +73,13 @@ store.get(0).then(value => console.log(value)) // logs "first"
 ```javascript
 let store = new Idbkv('example-store')
 
-// this store will perform one batched transaction per second
+// this store will gather actions for 1000ms before executing a transaction
 let slowStore = new Idbkv('slow-store', {batchInterval: 1000})
 ```
 
-Create a new Idbkv store instance using `indexedDB.open(dbName)` for data. Two instances created with the same name will use the same data store.
+Create a new Idbkv store instance using `IndexedDB.open(dbName)` for data. Two instances created with the same name will use the same data store.
 
-`batchInterval` is the number of milliseconds to queue actions before a batch transaction is performed. The default is 10ms.
+`batchInterval` is the number of milliseconds to wait for more actions before a batch transaction is performed. The default is 10ms. Higher values improve batching, but also increase the delay for actions to complete including get().
 
 ### _async_ get(key)
 
@@ -89,7 +91,7 @@ store.get('animals').then(animals => console.log(animals[2]))
 store.get('nonexistent').then(value => console.log(value)) // logs "undefined"
 ```
 
-Returns a promise that resolves with the value corresponding to `key`, or rejects due to errors thrown by indexedDB.
+Returns a promise that resolves with the value corresponding to `key`, or rejects due to errors thrown by IndexedDB.
 
 If the key doesn't exist in the database, then get() resolves with `undefined`.
 
@@ -102,7 +104,7 @@ store.set('pastas', ['spaghetti', 'linguine', 'macaroni', 'fettuccine'])
 store.get('pastas').then(pastas => console.log(pastas[1])) // logs "linguine"
 ```
 
-Returns a promise that resolves when the data is successfully written to the disk, or rejects on indexedDB errors.
+Returns a promise that resolves when the data is successfully written to the disk, or rejects on IndexedDB errors.
 
 ### _async_ delete(key)
 
@@ -115,7 +117,7 @@ store.delete('pastas')
 store.get('pastas').then(value => console.log(value)) // logs "undefined"
 ```
 
-Returns a promise that resolves when the data is successfully deleted from the disk or rejects on indexedDB errors.
+Returns a promise that resolves with the data from the store or rejects on IndexedDB errors.
 
 ### _async_ close()
 
@@ -128,11 +130,11 @@ store.get('animals').catch(err => console.error(err))
 // err.message is "This Idbkv instance is closed"
 ```
 
-Clears the setInterval() used for batching, closes the indexedDB database, and causes any gets, sets, or deletes performed afterwards to reject. Actions that were performed before the close but are still in the queue will finish normally in one final batch transaction.
+Closes the IndexedDB database, and causes any gets, sets, or deletes performed afterwards to reject. Actions that were performed before the close but are still in the queue will finish normally in one final batch transaction.
 
-Resolves after the final batch transaction succeeds or fails and the indexedDB database is closed.
+Resolves after the final batch transaction succeeds or fails and the IndexedDB database is closed.
 
-If you're creating lots of new unique Idbkv instances, then you should close them when they're no longer needed to free up their memory, but otherwise this method should never be needed as the impact for each instance is negligible, and closing indexedDB databases isn't important.
+It's usually not important to close an IndexedDB database as it will happen automatically when the page is closed
 
 ### _async_ destroy()
 
@@ -147,6 +149,6 @@ store = new Idbkv('example-store')
 store.get('color').then(color => console.log(color)) // logs "undefined"
 ```
 
-Calls `store.close()`, then deletes the underlying indexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
+Awaits `store.close()`, then deletes the underlying IndexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
 
 Returns a promise that resolves when the database is successfully deleted or rejects on an error.
