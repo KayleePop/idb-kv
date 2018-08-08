@@ -7,6 +7,7 @@ module.exports = class {
     this.db = new Promise((resolve, reject) => {
       // use global scope to support web workers
       let request = indexedDB.open(dbName, 1) // eslint-disable-line
+
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
         let error = new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`)
@@ -45,8 +46,10 @@ module.exports = class {
     // promise for the currently pending commit to the database if it exists
     this._commitPromise = null
   }
+
   async get (key) {
     if (this.closed) throw this.closedError
+
     return new Promise((resolve, reject) => {
       this._actions.push({
         type: 'get',
@@ -58,8 +61,10 @@ module.exports = class {
       this._getOrStartCommit()
     })
   }
+
   async set (key, value) {
     if (this.closed) throw this.closedError
+
     this._actions.push({
       type: 'set',
       key: key,
@@ -68,8 +73,10 @@ module.exports = class {
 
     return this._getOrStartCommit()
   }
+
   async delete (key) {
     if (this.closed) throw this.closedError
+
     this._actions.push({
       type: 'delete',
       key: key
@@ -77,6 +84,7 @@ module.exports = class {
 
     return this._getOrStartCommit()
   }
+
   async close () {
     this.closed = true
 
@@ -86,6 +94,7 @@ module.exports = class {
     let db = await this.db
     db.close()
   }
+
   async destroy () {
     await this.close()
 
@@ -96,11 +105,13 @@ module.exports = class {
       request.onerror = () => reject(request.error)
     })
   }
+
   // return the pending commit or a new one if none exists
   _getOrStartCommit () {
     if (!this._commitPromise) this._commitPromise = this._commit()
     return this._commitPromise
   }
+
   // wait for the batchInterval, then commit the queued actions to the database
   async _commit () {
     // the first queue lasts until the db is opened
