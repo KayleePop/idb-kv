@@ -34,7 +34,7 @@ test('get nonexistent key', async (t) => {
 test('data should persist to a new instance', async (t) => {
   let store = await setupStore('persistTest')
 
-  store.set('key', 'value')
+  await store.set('key', 'value')
   await store.close()
   store = null
   // give the garbage collector a chance to clear the previous store's memory
@@ -126,7 +126,7 @@ test('seperate stores should not interact', async (t) => {
 })
 
 test('closed instance rejects new actions', async (t) => {
-  let store = await setupStore('closedTest')
+  let store = await setupStore('closedErrorTest')
   t.plan(6)
 
   store.close()
@@ -156,4 +156,17 @@ test('closed instance rejects new actions', async (t) => {
     .catch(err => t.equals(err.message, 'This Idbkv instance is closed'))
   store.delete('key')
     .catch(err => t.equals(err.message, 'This Idbkv instance is closed'))
+})
+
+test('close() waits for queued actions', async (t) => {
+  let store = await setupStore('closedDrainTest')
+
+  store.set('key', 'first')
+  store.delete('key')
+  store.set('key', 'value')
+  await store.close()
+  store = new Idbkv('closedDrainTest')
+
+  let value = await store.get('key')
+  t.equals(value, 'value')
 })
