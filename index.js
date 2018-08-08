@@ -1,5 +1,5 @@
 module.exports = class {
-  constructor (dbName, {batchInterval = 10} = {}) {
+  constructor (dbName, { batchInterval = 10 } = {}) {
     this.storeName = 'idb-kv'
     this.batchInterval = batchInterval
 
@@ -16,7 +16,7 @@ module.exports = class {
         this.closedError = error
 
         // reject queued gets
-        for (const action of this._actions) if (action.reject) action.reject(error)
+        for (const action of this._actions) { if (action.reject) action.reject(error) }
 
         this._actions = null
 
