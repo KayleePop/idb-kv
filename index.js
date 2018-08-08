@@ -14,9 +14,8 @@ module.exports = class {
         this.closed = true
         this.closedError = error
 
-        // reject all actions
+        // reject queued gets
         for (let action of this._actions) if (action.reject) action.reject(error)
-        this._rejectBatch(error)
 
         this._actions = null
 
@@ -43,14 +42,8 @@ module.exports = class {
     // error used for rejections of new actions when the store is closed
     this.closedError = new Error('This Idbkv instance is closed')
 
-    // promise for the completion of the next batch transaction
-    this._batchPromise = new Promise((resolve, reject) => {
-      this._resolveBatch = resolve
-      this._rejectBatch = reject
-    })
-
-    // promise for the return value of the setInterval used for batching
-    this._batchTimer = this._startBatchTimer()
+    // promise for the currently pending commit to the database if it exists
+    this._commitPromise = null
   }
   async get (key) {
     if (this.closed) throw this.closedError
@@ -61,6 +54,8 @@ module.exports = class {
         resolve: resolve,
         reject: reject
       })
+
+      this._getOrStartCommit()
     })
   }
   async set (key, value) {
@@ -70,7 +65,8 @@ module.exports = class {
       key: key,
       value: value
     })
-    return this._batchPromise
+
+    return this._getOrStartCommit()
   }
   async delete (key) {
     if (this.closed) throw this.closedError
@@ -78,15 +74,14 @@ module.exports = class {
       type: 'delete',
       key: key
     })
-    return this._batchPromise
+
+    return this._getOrStartCommit()
   }
   async close () {
     this.closed = true
 
-    clearInterval(await this._batchTimer)
-
-    // final commit to drain queue of actions executed before close
-    await this._commit()
+    // wait for any queued actions to be committed
+    if (this._commitPromise) await this._commitPromise
 
     let db = await this.db
     db.close()
@@ -101,32 +96,23 @@ module.exports = class {
       request.onerror = () => reject(request.error)
     })
   }
-  async _startBatchTimer () {
-    // first commit right after db is ready and before any delay
-    await this.db
-    this._commit()
-
-    // wrapping _commit() in an arrow function is necessary to preserve lexical scope
-    return setInterval(() => this._commit(), this.batchInterval)
+  // return the pending commit or a new one if none exists
+  _getOrStartCommit () {
+    if (!this._commitPromise) this._commitPromise = this._commit()
+    return this._commitPromise
   }
-  // commit all of the pending gets, sets, and deletes to the db
+  // wait for the batchInterval, then commit the queued actions to the database
   async _commit () {
-    if (this._actions.length === 0) return
+    // the first queue lasts until the db is opened
+    let db = await this.db
 
-    let commitedActions = this._actions
-    this._actions = []
+    // wait batchInterval milliseconds for more actions
+    await new Promise(resolve => setTimeout(resolve, this.batchInterval))
 
-    let resolveBatch = this._resolveBatch
-    let rejectBatch = this._rejectBatch
-    this._batchPromise = new Promise((resolve, reject) => {
-      this._resolveBatch = resolve
-      this._rejectBatch = reject
-    })
-
-    let transaction = (await this.db).transaction(this.storeName, 'readwrite')
+    let transaction = db.transaction(this.storeName, 'readwrite')
     let store = transaction.objectStore(this.storeName)
 
-    for (let action of commitedActions) {
+    for (let action of this._actions) {
       switch (action.type) {
         case 'get':
           let request = store.get(action.key)
@@ -142,17 +128,18 @@ module.exports = class {
       }
     }
 
+    // empty queue
+    this._actions = []
+    this._commitPromise = null
+
     return new Promise((resolve, reject) => {
       transaction.oncomplete = () => {
-        resolveBatch()
         resolve()
       }
 
       transaction.onerror = transaction.onabort = (error) => {
         // onabort uses an argument to pass the error, but onerror uses transaction.error
-        rejectBatch(transaction.error || error)
-
-        resolve() // commit succeeded even though transaction failed
+        reject(transaction.error || error)
       }
     })
   }
