@@ -77,7 +77,7 @@ let store = new Idbkv('example-store')
 let slowStore = new Idbkv('slow-store', {batchInterval: 1000})
 ```
 
-Create a new Idbkv store instance using `IndexedDB.open(dbName)` for data. Two instances created with the same name will use the same data store.
+Create a new Idbkv store instance using `indexedDB.open(dbName)` for data. Two instances created with the same name will use the same data store.
 
 `batchInterval` is the number of milliseconds to wait for more actions before a batch transaction is performed. The default is 10ms. Higher values improve batching, but also increase the delay for actions to complete including get().
 
