@@ -147,9 +147,7 @@ module.exports = class {
     this._commitPromise = null
 
     return new Promise((resolve, reject) => {
-      transaction.oncomplete = () => {
-        resolve()
-      }
+      transaction.oncomplete = () => resolve()
 
       transaction.onerror = transaction.onabort = (error) => {
         // onabort uses an argument to pass the error, but onerror uses transaction.error
