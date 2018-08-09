@@ -117,11 +117,11 @@ module.exports = class {
 
   // wait for the batchInterval, then commit the queued actions to the database
   async _commit () {
-    // the first queue lasts until the db is opened
-    const db = await this.db
-
     // wait batchInterval milliseconds for more actions
     await new Promise(resolve => setTimeout(resolve, this.batchInterval))
+
+    // the first queue lasts until the db is opened
+    const db = await this.db
 
     const transaction = db.transaction(this.storeName, 'readwrite')
     const store = transaction.objectStore(this.storeName)
