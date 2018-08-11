@@ -16,7 +16,9 @@ module.exports = class Idbkv {
         this.closedError = error
 
         // reject queued gets
-        for (const action of this._actions) { if (action.reject) action.reject(error) }
+        for (const action of this._actions) {
+          if (action.reject) action.reject(error)
+        }
 
         this._actions = null
 
