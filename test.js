@@ -170,3 +170,57 @@ test('close() waits for queued actions', async (t) => {
   let value = await store.get('key')
   t.equals(value, 'value')
 })
+
+test('indexedDB failing to open rejects actions', (t) => {
+  t.plan(7)
+
+  // change to error after 100ms
+  // it's the last test, so overwriting this shouldn't matter
+  window.indexedDB.open = () => {
+    const request = {}
+    setTimeout(() => {
+      request.error = new Error('idb error')
+      request.onerror()
+    }, 100)
+    return request
+  }
+  const store = new Idbkv('errorFailActionTest')
+
+  // queued actions before the failure
+  store.get('key')
+    .then(() => t.fail('queued get should reject after db fails to open'))
+    .catch(err => {
+      t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+    })
+  store.set('key', 'value')
+    .then(() => t.fail('queued set should reject after db fails to open'))
+    .catch(err => {
+      t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+    })
+  store.delete('key')
+    .then(() => t.fail('queued delete should reject after db fails to open'))
+    .catch(err => {
+      t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+    })
+
+  store.db.catch((err) => {
+    t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+
+    // new actions after the failure
+    store.get('key')
+      .then(() => t.fail('get after idb failing to open should reject'))
+      .catch(err => {
+        t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+      })
+    store.set('key', 'value')
+      .then(() => t.fail('set after idb failing to open should reject'))
+      .catch(err => {
+        t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+      })
+    store.delete('key')
+      .then(() => t.fail('delete after idb failing to open should reject'))
+      .catch(err => {
+        t.equals(err.message, 'error opening the indexedDB database named errorFailActionTest: Error: idb error')
+      })
+  })
+})
