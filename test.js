@@ -22,7 +22,7 @@ test('set then get', async () => {
   assert.equal(value2, 'value2', 'same transaction')
 })
 
-test('get nonexistent key', async () => {
+test('get on nonexistant key should return undefined', async () => {
   let store = await createCleanStore('undefinedGetTest')
 
   let value = await store.get('key')
@@ -57,7 +57,7 @@ test('overwrite a key', async () => {
   assert.equal(value2, 'overwrite', 'same transaction')
 })
 
-test('order is preserved in batch', async () => {
+test('order should be preserved in batch', async () => {
   let store = await createCleanStore('orderTest')
 
   store.set('key', 'value')
@@ -120,7 +120,7 @@ test('seperate stores should not interact', async () => {
   assert.equal(value2, 'value2', 'deleting the same key in a different store should not affect this store')
 })
 
-test('closed instance rejects new actions', async () => {
+test('closed instance should reject new actions', async () => {
   let store = await createCleanStore('closedErrorTest')
 
   store.close()
@@ -131,7 +131,7 @@ test('closed instance rejects new actions', async () => {
   await assert.rejects(store.delete('key'), closedError, 'delete should reject')
 })
 
-test('close() waits for queued actions', async () => {
+test('close() should wait for queued actions', async () => {
   let store = await createCleanStore('closedDrainTest')
 
   store.set('key', 'value')
@@ -154,7 +154,7 @@ function overwriteIdbOpen () {
   }
 }
 
-test('indexedDB failing to open rejects queued actions', async () => {
+test('indexedDB failing to open should reject queued actions', async () => {
   const originalOpen = window.indexedDB.open
   overwriteIdbOpen()
 
@@ -173,7 +173,7 @@ test('indexedDB failing to open rejects queued actions', async () => {
   window.indexedDB.open = originalOpen
 })
 
-test('indexedDB failing to open rejects new actions', async () => {
+test('indexedDB failing to open should reject subsequent actions', async () => {
   const originalOpen = window.indexedDB.open
   overwriteIdbOpen()
 
