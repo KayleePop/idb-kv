@@ -3,7 +3,7 @@
   "version": "1.5.2",
   "description": "A tiny key value API for indexeddb with automatic batching for out of the box performance.",
   "scripts": {
-    "test": "standard && browserify test.js | tape-run",
+    "test": "standard && browserify test.js | tape-run | tap-spec",
     "size": "cat index.js | minify | wc -c"
   },
   "keywords": [
@@ -26,8 +26,9 @@
   "devDependencies": {
     "browserify": "^16.2.2",
     "standard": "^12.0.0",
-    "tape": "^4.9.1",
-    "tape-promise": "^3.0.0",
-    "tape-run": "^4.0.0"
+    "muggle-test": "^1.0.0",
+    "muggle-assert": "^1.0.0",
+    "tape-run": "^4.0.0",
+    "tap-spec": "^5.0.0"
   }
 }
