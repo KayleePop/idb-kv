@@ -10,19 +10,7 @@ module.exports = class Idbkv {
 
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
-        const error = new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`)
-
-        this.closed = true
-        this.closedError = error
-
-        // reject queued gets
-        for (const action of this._actions) {
-          if (action.reject) action.reject(error)
-        }
-
-        this._actions = null
-
-        reject(error)
+        reject(new Error(`error opening the indexedDB database named ${dbName}: ${request.error}`))
       }
 
       // if db doesn't already exist
@@ -39,34 +27,28 @@ module.exports = class Idbkv {
     //   reject: (reject get() promise)
     // }
 
-    // new actions will be cancelled if closed is true
-    this.closed = false
-
-    // error used for rejections of new actions when the store is closed
-    this.closedError = new Error('This Idbkv instance is closed')
-
     // promise for the currently pending commit to the database if it exists
     this._commitPromise = null
   }
 
   async get (key) {
-    if (this.closed) throw this.closedError
-
-    return new Promise((resolve, reject) => {
+    const getPromise = new Promise((resolve, reject) => {
       this._actions.push({
         type: 'get',
         key: key,
         resolve: resolve,
         reject: reject
       })
-
-      this._getOrStartCommit()
     })
+
+    // reject if the commit fails before the get succeeds
+    // to prevent hanging on a failed DB open or other transaction errors
+    await Promise.race([getPromise, this._getOrStartCommit()])
+
+    return getPromise
   }
 
   async set (key, value) {
-    if (this.closed) throw this.closedError
-
     this._actions.push({
       type: 'set',
       key: key,
@@ -77,8 +59,6 @@ module.exports = class Idbkv {
   }
 
   async delete (key) {
-    if (this.closed) throw this.closedError
-
     this._actions.push({
       type: 'delete',
       key: key
@@ -87,24 +67,14 @@ module.exports = class Idbkv {
     return this._getOrStartCommit()
   }
 
-  async close () {
-    this.closed = true
-
-    // wait for any queued actions to be committed
-    // ignore errors, the final transaction just needs to finish
-    try {
-      if (this._commitPromise) await this._commitPromise
-    } catch (e) {}
-
-    const db = await this.db
-    db.close()
-  }
-
   async destroy () {
-    await this.close()
+    const db = await this.db
+
+    // the onsuccess event will only be called after the DB closes
+    db.close()
 
     // use global to allow use in web workers
-    const request = indexedDB.deleteDatabase((await this.db).name) // eslint-disable-line
+    const request = indexedDB.deleteDatabase(db.name) // eslint-disable-line
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
