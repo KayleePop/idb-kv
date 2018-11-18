@@ -75,6 +75,7 @@ module.exports = class Idbkv {
 
     // use global to allow use in web workers
     const request = indexedDB.deleteDatabase(db.name) // eslint-disable-line
+
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
@@ -83,7 +84,10 @@ module.exports = class Idbkv {
 
   // return the pending commit or a new one if none exists
   _getOrStartCommit () {
-    if (!this._commitPromise) this._commitPromise = this._commit()
+    if (!this._commitPromise) {
+      this._commitPromise = this._commit()
+    }
+
     return this._commitPromise
   }
 

@@ -5,20 +5,20 @@ const sleep = (delay) => new Promise(resolve => setTimeout(resolve, delay))
 
 // make sure store is empty
 async function createCleanStore (storeName, opts) {
-  let store = new Idbkv(storeName)
+  const store = new Idbkv(storeName)
   await store.destroy()
   return new Idbkv(storeName, opts)
 }
 
 test('set then get', async () => {
-  let store = await createCleanStore('setTest')
+  const store = await createCleanStore('setTest')
 
   await store.set('key', 'value')
-  let value = await store.get('key')
+  const value = await store.get('key')
   assert.equal(value, 'value', 'seperate transactions')
 
   store.set('key2', 'value2')
-  let value2 = await store.get('key2')
+  const value2 = await store.get('key2')
   assert.equal(value2, 'value2', 'same transaction')
 
   // cleanup
@@ -26,9 +26,9 @@ test('set then get', async () => {
 })
 
 test('get on nonexistant key should return undefined', async () => {
-  let store = await createCleanStore('undefinedGetTest')
+  const store = await createCleanStore('undefinedGetTest')
 
-  let value = await store.get('key')
+  const value = await store.get('key')
   assert.equal(value, undefined, 'should be undefined')
 
   // cleanup
@@ -47,9 +47,9 @@ test('data should persist to a new instance', async () => {
   // give the garbage collector a chance to clear the previous store's memory
   await sleep(100)
 
-  let store2 = new Idbkv('persistTest')
+  const store2 = new Idbkv('persistTest')
 
-  let value = await store2.get('key')
+  const value = await store2.get('key')
   assert.equal(value, 'value')
 
   // cleanup
@@ -57,16 +57,16 @@ test('data should persist to a new instance', async () => {
 })
 
 test('overwrite a key', async () => {
-  let store = await createCleanStore('overwriteTest')
+  const store = await createCleanStore('overwriteTest')
 
   await store.set('key', 'value')
   await store.set('key', 'overwrite')
-  let value = await store.get('key')
+  const value = await store.get('key')
   assert.equal(value, 'overwrite', 'different transactions')
 
   store.set('key2', 'value')
   store.set('key2', 'overwrite')
-  let value2 = await store.get('key2')
+  const value2 = await store.get('key2')
   assert.equal(value2, 'overwrite', 'same transaction')
 
   // cleanup
@@ -74,7 +74,7 @@ test('overwrite a key', async () => {
 })
 
 test('order should be preserved in batch', async () => {
-  let store = await createCleanStore('orderTest')
+  const store = await createCleanStore('orderTest')
 
   store.set('key', 'value')
   const setValue = store.get('key')
@@ -92,11 +92,11 @@ test('order should be preserved in batch', async () => {
 })
 
 test('store an array', async () => {
-  let store = await createCleanStore('functionTest')
+  const store = await createCleanStore('functionTest')
 
   store.set('array', [1, 1, 1, 1, 1])
-  let array = await store.get('array')
-  let sum = array.reduce((sum, curr) => sum + curr)
+  const array = await store.get('array')
+  const sum = array.reduce((sum, curr) => sum + curr)
   assert.equal(sum, 5, 'array should be preserved through set and get')
 
   // cleanup
@@ -104,11 +104,11 @@ test('store an array', async () => {
 })
 
 test('delete a key', async () => {
-  let store = await createCleanStore('deleteTest')
+  const store = await createCleanStore('deleteTest')
 
   store.set('key', 'value')
   store.delete('key')
-  let value = await store.get('key')
+  const value = await store.get('key')
   assert.equal(value, undefined)
 
   // cleanup
@@ -133,18 +133,18 @@ test('destroy a store', async () => {
 })
 
 test('seperate stores should not interact', async () => {
-  let store1 = await createCleanStore('storeInteractionTest1')
-  let store2 = await createCleanStore('storeInteractionTest2')
+  const store1 = await createCleanStore('storeInteractionTest1')
+  const store2 = await createCleanStore('storeInteractionTest2')
 
   store1.set('key', 'value1')
   store2.set('key', 'value2')
 
-  let value1 = await store1.get('key')
+  const value1 = await store1.get('key')
   assert.equal(value1, 'value1', 'putting to the same key of a different store should not affect this store')
 
   await store1.delete('key')
 
-  let value2 = await store2.get('key')
+  const value2 = await store2.get('key')
   assert.equal(value2, 'value2', 'deleting the same key in a different store should not affect this store')
 
   // cleanup
