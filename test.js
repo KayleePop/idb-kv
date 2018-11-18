@@ -39,10 +39,14 @@ test('data should persist to a new instance', async () => {
   let store = await createCleanStore('persistTest')
 
   await store.set('key', 'value')
-  await store.close()
+
+  const storeDB = await store.db
+  storeDB.close()
   store = null
+
   // give the garbage collector a chance to clear the previous store's memory
   await sleep(100)
+
   let store2 = new Idbkv('persistTest')
 
   let value = await store2.get('key')
@@ -146,34 +150,6 @@ test('seperate stores should not interact', async () => {
   // cleanup
   await store1.destroy()
   await store2.destroy()
-})
-
-test('closed instance should reject new actions', async () => {
-  let store = await createCleanStore('closedErrorTest')
-
-  store.close()
-
-  const closedError = new Error('This Idbkv instance is closed')
-  await assert.rejects(store.get('key'), closedError, 'get should reject')
-  await assert.rejects(store.set('key', 'value'), closedError, 'set should reject')
-  await assert.rejects(store.delete('key'), closedError, 'delete should reject')
-
-  // cleanup
-  await store.destroy()
-})
-
-test('close() should wait for queued actions', async () => {
-  let store = await createCleanStore('closedDrainTest')
-
-  store.set('key', 'value')
-  await store.close()
-  store = new Idbkv('closedDrainTest')
-
-  let value = await store.get('key')
-  assert.equal(value, 'value')
-
-  // cleanup
-  await store.destroy()
 })
 
 // change indexedDB.open to always fail after 100ms
