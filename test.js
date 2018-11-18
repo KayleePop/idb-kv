@@ -20,6 +20,9 @@ test('set then get', async () => {
   store.set('key2', 'value2')
   let value2 = await store.get('key2')
   assert.equal(value2, 'value2', 'same transaction')
+
+  // cleanup
+  await store.destroy()
 })
 
 test('get on nonexistant key should return undefined', async () => {
@@ -27,6 +30,9 @@ test('get on nonexistant key should return undefined', async () => {
 
   let value = await store.get('key')
   assert.equal(value, undefined, 'should be undefined')
+
+  // cleanup
+  await store.destroy()
 })
 
 test('data should persist to a new instance', async () => {
@@ -41,6 +47,9 @@ test('data should persist to a new instance', async () => {
 
   let value = await store2.get('key')
   assert.equal(value, 'value')
+
+  // cleanup
+  await store2.destroy()
 })
 
 test('overwrite a key', async () => {
@@ -55,6 +64,9 @@ test('overwrite a key', async () => {
   store.set('key2', 'overwrite')
   let value2 = await store.get('key2')
   assert.equal(value2, 'overwrite', 'same transaction')
+
+  // cleanup
+  await store.destroy()
 })
 
 test('order should be preserved in batch', async () => {
@@ -70,6 +82,9 @@ test('order should be preserved in batch', async () => {
   assert.equal(await setValue, 'value')
   assert.equal(await overwriteValue, 'overwrite')
   assert.equal(await deleteValue, undefined)
+
+  // cleanup
+  await store.destroy()
 })
 
 test('store an array', async () => {
@@ -79,6 +94,9 @@ test('store an array', async () => {
   let array = await store.get('array')
   let sum = array.reduce((sum, curr) => sum + curr)
   assert.equal(sum, 5, 'array should be preserved through set and get')
+
+  // cleanup
+  await store.destroy()
 })
 
 test('delete a key', async () => {
@@ -88,6 +106,9 @@ test('delete a key', async () => {
   store.delete('key')
   let value = await store.get('key')
   assert.equal(value, undefined)
+
+  // cleanup
+  await store.destroy()
 })
 
 test('destroy a store', async () => {
@@ -102,6 +123,9 @@ test('destroy a store', async () => {
   assert.equal(await store.get('key1'), undefined)
   assert.equal(await store.get('key2'), undefined)
   assert.equal(await store.get('key3'), undefined)
+
+  // cleanup
+  await store.destroy()
 })
 
 test('seperate stores should not interact', async () => {
@@ -118,6 +142,10 @@ test('seperate stores should not interact', async () => {
 
   let value2 = await store2.get('key')
   assert.equal(value2, 'value2', 'deleting the same key in a different store should not affect this store')
+
+  // cleanup
+  await store1.destroy()
+  await store2.destroy()
 })
 
 test('closed instance should reject new actions', async () => {
@@ -129,6 +157,9 @@ test('closed instance should reject new actions', async () => {
   await assert.rejects(store.get('key'), closedError, 'get should reject')
   await assert.rejects(store.set('key', 'value'), closedError, 'set should reject')
   await assert.rejects(store.delete('key'), closedError, 'delete should reject')
+
+  // cleanup
+  await store.destroy()
 })
 
 test('close() should wait for queued actions', async () => {
@@ -140,6 +171,9 @@ test('close() should wait for queued actions', async () => {
 
   let value = await store.get('key')
   assert.equal(value, 'value')
+
+  // cleanup
+  await store.destroy()
 })
 
 // change indexedDB.open to always fail after 100ms
@@ -170,6 +204,7 @@ test('indexedDB failing to open should reject queued actions', async () => {
     assert.rejects(store.delete('key'), expectedError, 'delete')
   ])
 
+  // cleanup
   window.indexedDB.open = originalOpen
 })
 
@@ -189,5 +224,6 @@ test('indexedDB failing to open should reject subsequent actions', async () => {
   await assert.rejects(store.set('key', 'value'), expectedError, 'set')
   await assert.rejects(store.delete('key'), expectedError, 'delete')
 
+  // cleanup
   window.indexedDB.open = originalOpen
 })
