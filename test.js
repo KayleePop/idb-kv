@@ -152,6 +152,32 @@ test('seperate stores should not interact', async () => {
   await store2.destroy()
 })
 
+test('destroyed instance should reject new actions', async () => {
+  let store = new Idbkv('destroyedErrorTest')
+
+  await store.destroy()
+
+  const reason = new Error('This idb-kv instance has been destroyed')
+  await assert.rejects(store.get('key'), reason, 'get should reject')
+  await assert.rejects(store.set('key', 'value'), reason, 'set should reject')
+  await assert.rejects(store.delete('key'), reason, 'delete should reject')
+})
+
+test('destroy() called before actions complete should reject them', async () => {
+  let store = new Idbkv('destroyedErrorTest')
+
+  // wait until the database is opened so the actions actually start executing
+  await store.db
+
+  const reason = new Error('This idb-kv instance has been destroyed')
+  await Promise.all([
+    assert.rejects(store.get('key'), reason, 'get should reject'),
+    assert.rejects(store.set('key', 'value'), reason, 'set should reject'),
+    assert.rejects(store.delete('key'), reason, 'delete should reject'),
+    store.destroy()
+  ])
+})
+
 // change indexedDB.open to always fail after 100ms
 function overwriteIdbOpen () {
   window.indexedDB.open = () => {

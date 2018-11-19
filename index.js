@@ -76,6 +76,9 @@ module.exports = class Idbkv {
     // use global to allow use in web workers
     const request = indexedDB.deleteDatabase(db.name) // eslint-disable-line
 
+    // reject commits after destruction and by extension reject new actions
+    this.db = Promise.reject(new Error('This idb-kv instance has been destroyed'))
+
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
