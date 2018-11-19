@@ -119,23 +119,6 @@ store.get('pastas').then(value => console.log(value)) // logs "undefined"
 
 Returns a promise that resolves with the data from the store or rejects on IndexedDB errors.
 
-### _async_ close()
-
-#### Tear down the Idbkv instance
-
-```javascript
-store.get('animals', value => console.log(value[3])) // logs moose
-store.close()
-store.get('animals').catch(err => console.error(err))
-// err.message is "This Idbkv instance is closed"
-```
-
-Closes the IndexedDB database, and causes any gets, sets, or deletes performed afterwards to reject. Actions that were performed before the close but are still in the queue will finish normally in one final batch transaction.
-
-Resolves after the final batch transaction succeeds or fails and the IndexedDB database is closed.
-
-It's usually not important to close an IndexedDB database as it will happen automatically when the page is closed
-
 ### _async_ destroy()
 
 #### Delete the database, and tear down the Idbkv instance
@@ -149,6 +132,6 @@ store = new Idbkv('example-store')
 store.get('color').then(color => console.log(color)) // logs "undefined"
 ```
 
-Awaits `store.close()`, then deletes the underlying IndexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
+Closes and then deletes the underlying IndexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
 
 Returns a promise that resolves when the database is successfully deleted or rejects on an error.
