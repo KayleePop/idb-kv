@@ -40,9 +40,10 @@ test('data should persist to a new instance', async () => {
 
   await store.set('key', 'value')
 
-  const storeDB = await store.db
+  let storeDB = await store.db
   storeDB.close()
   store = null
+  storeDB = null
 
   // give the garbage collector a chance to clear the previous store's memory
   await sleep(100)
