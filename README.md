@@ -30,7 +30,8 @@ let store = new Idbkv('example-store')
 
 store.set('animals', ['dog', 'cat', 'koala', 'moose', 'chinchilla'])
 store.set('pastas', ['spaghetti', 'linguine', 'macaroni', 'fettuccine'])
-store.get('animals').then(animals => console.log(animals[2])) // logs "koala"
+const animals = await store.get('animals')
+animals[2] // >> 'koala'
 ```
 
 ```javascript
@@ -39,7 +40,8 @@ let Idbkv = require('idb-kv')
 
 let store = new Idbkv('example-store') // using the same name loads previous data
 
-store.get('pastas').then(pastas => console.log(pastas[1])) // logs "linguine"
+const pastas = await store.get('pastas')
+pastas[1] // >> "linguine"
 ```
 
 ## Batching
@@ -61,9 +63,9 @@ The order of actions is maintained when batching.
 
 ```javascript
 store.delete(0)
-store.get(0).then(value => console.log(value)) // logs undefined
+store.get(0) // resolves with >> undefined
 store.set(0, 'first')
-store.get(0).then(value => console.log(value)) // logs "first"
+store.get(0) // resolves with >> "first"
 ```
 
 ## API
@@ -86,9 +88,8 @@ Create a new Idbkv store instance using `indexedDB.open(dbName)` for data. Two i
 #### Read a value from the store
 
 ```javascript
-store.get('animals').then(animals => console.log(animals[2]))
-
-store.get('nonexistent').then(value => console.log(value)) // logs "undefined"
+store.get('animals') // resolves with >> ['dog', 'cat', 'koala', 'moose', 'chinchilla']
+store.get('nonexistent') // resolves with >> undefined
 ```
 
 Returns a promise that resolves with the value corresponding to `key`, or rejects due to errors thrown by IndexedDB.
@@ -101,7 +102,8 @@ If the key doesn't exist in the database, then get() resolves with `undefined`.
 
 ```javascript
 store.set('pastas', ['spaghetti', 'linguine', 'macaroni', 'fettuccine'])
-store.get('pastas').then(pastas => console.log(pastas[1])) // logs "linguine"
+const pastas = await store.get('pastas')
+pastas[1] // >> "linguine"
 ```
 
 Returns a promise that resolves when the data is successfully written to the disk, or rejects on IndexedDB errors.
@@ -114,7 +116,7 @@ Returns a promise that resolves when the data is successfully written to the dis
 let store = new Idbkv('example-store')
 store.set('pastas', ['spaghetti', 'linguine', 'macaroni', 'fettuccine'])
 store.delete('pastas')
-store.get('pastas').then(value => console.log(value)) // logs "undefined"
+store.get('pastas') // resolves with >> undefined
 ```
 
 Returns a promise that resolves with the data from the store or rejects on IndexedDB errors.
@@ -125,11 +127,11 @@ Returns a promise that resolves with the data from the store or rejects on Index
 
 ```javascript
 let store = new Idbkv('example-store')
-store.get('color').then(color => console.log(color)) // logs "blue"
+store.get('color') // resolves with >> "blue"
 await store.destroy()
 
 store = new Idbkv('example-store')
-store.get('color').then(color => console.log(color)) // logs "undefined"
+store.get('color') // resolves with >> undefined
 ```
 
 Closes and then deletes the underlying IndexedDB database. This is basically equivalent to calling `store.delete()` on every existing key in the store.
