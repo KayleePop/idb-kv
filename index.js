@@ -1,3 +1,6 @@
+/* global indexedDB */
+// use global to allow use in web workers
+
 module.exports = class Idbkv {
   constructor (dbName, { batchInterval = 10 } = {}) {
     this.storeName = 'idb-kv'
@@ -5,8 +8,7 @@ module.exports = class Idbkv {
 
     // Promise for the indexeddb DB object
     this.db = new Promise((resolve, reject) => {
-      // use global scope to support web workers
-      const request = indexedDB.open(dbName, 1) // eslint-disable-line
+      const request = indexedDB.open(dbName, 1)
 
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => {
@@ -73,8 +75,7 @@ module.exports = class Idbkv {
     // the onsuccess event will only be called after the DB closes
     db.close()
 
-    // use global to allow use in web workers
-    const request = indexedDB.deleteDatabase(db.name) // eslint-disable-line
+    const request = indexedDB.deleteDatabase(db.name)
 
     // reject commits after destruction and by extension reject new actions
     this.db = Promise.reject(new Error('This idb-kv instance has been destroyed'))
