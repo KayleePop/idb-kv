@@ -129,9 +129,13 @@ module.exports = class Idbkv {
     return new Promise((resolve, reject) => {
       transaction.oncomplete = () => resolve()
 
-      transaction.onerror = transaction.onabort = (error) => {
-        // onabort uses an argument to pass the error, but onerror uses transaction.error
-        reject(transaction.error || error)
+      transaction.onabort = (event) => reject(event.target.error)
+
+      transaction.onerror = () => {
+        // if aborted, onerror is still called, but transaction.error is null
+        if (transaction.error) {
+          reject(transaction.error)
+        }
       }
     })
   }
