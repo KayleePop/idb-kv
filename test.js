@@ -154,7 +154,7 @@ test('seperate stores should not interact', async () => {
 })
 
 test('destroyed instance should reject new actions', async () => {
-  let store = new Idbkv('destroyRejectsNew')
+  const store = new Idbkv('destroyRejectsNew')
 
   await store.destroy()
 
@@ -165,7 +165,7 @@ test('destroyed instance should reject new actions', async () => {
 })
 
 test('destroy() should reject queued actions', async () => {
-  let store = new Idbkv('destroyRejectsQueued')
+  const store = new Idbkv('destroyRejectsQueued')
 
   // wait until the database is opened so the actions actually start executing
   await store.db
