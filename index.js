@@ -108,17 +108,20 @@ module.exports = class Idbkv {
 
     for (const action of this._actions) {
       switch (action.type) {
-        case 'get':
+        case 'get': {
           const request = store.get(action.key)
           request.onsuccess = () => action.resolve(request.result)
           request.onerror = () => action.reject(request.error)
           break
-        case 'set':
+        }
+        case 'set': {
           store.put(action.value, action.key)
           break
-        case 'delete':
+        }
+        case 'delete': {
           store.delete(action.key)
           break
+        }
       }
     }
 
