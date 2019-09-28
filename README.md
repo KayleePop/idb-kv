@@ -119,7 +119,7 @@ store.delete('pastas')
 store.get('pastas') // resolves with >> undefined
 ```
 
-Returns a promise that resolves with the data from the store or rejects on IndexedDB errors.
+Returns a promise that resolves when the data is successfully deleted from the disk or rejects on indexedDB errors.
 
 ### _async_ destroy()
 
