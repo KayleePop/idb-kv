@@ -1,6 +1,6 @@
 # Idb-kv
 
- [![Travis badge](https://travis-ci.org/KayleePop/idb-kv.svg?branch=master)](https://travis-ci.org/KayleePop/idb-kv) [![standard badge](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![npm](https://img.shields.io/npm/v/idb-kv.svg)](https://www.npmjs.com/package/idb-kv)
+ [![Node.js CI](https://github.com/KayleePop/idb-kv/workflows/Node.js%20CI/badge.svg)](https://github.com/KayleePop/idb-kv/actions) [![standard badge](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![npm](https://img.shields.io/npm/v/idb-kv.svg)](https://www.npmjs.com/package/idb-kv)
 
 ## IndexedDB Key Value Store
 
