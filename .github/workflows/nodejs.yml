@@ -1,0 +1,26 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up node using nvm
+      uses: dcodeIO/setup-node-nvm@v3.0.0
+      with:
+        node-version: lts/*
+    - run: sudo apt-get install xvfb
+    - run: npm install
+    - run: xvfb-run --auto-servernum npm test
+      env:
+        CI: true
+    - name: Cleanup xvfb pidx
+      uses: bcomnes/cleanup-xvfb@v1
