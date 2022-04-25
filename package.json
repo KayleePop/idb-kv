@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "browserify": "^17.0.0",
-    "standard": "^16.0.1",
+    "standard": "^17.0.0",
     "muggle-test": "^1.0.0",
     "muggle-assert": "^1.0.0",
     "tape-run": "^9.0.0",
