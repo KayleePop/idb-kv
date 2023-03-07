@@ -16,6 +16,7 @@
     "batch",
     "performance"
   ],
+  "types": "index.d.ts",
   "author": "KayleePop",
   "license": "MIT",
   "repository": "https://github.com/kayleepop/idb-kv.git",
