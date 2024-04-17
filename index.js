@@ -37,9 +37,9 @@ module.exports = class Idbkv {
     const getPromise = new Promise((resolve, reject) => {
       this._actions.push({
         type: 'get',
-        key: key,
-        resolve: resolve,
-        reject: reject
+        key,
+        resolve,
+        reject
       })
     })
 
@@ -53,8 +53,8 @@ module.exports = class Idbkv {
   async set (key, value) {
     this._actions.push({
       type: 'set',
-      key: key,
-      value: value
+      key,
+      value
     })
 
     return this._getOrStartCommit()
@@ -63,7 +63,7 @@ module.exports = class Idbkv {
   async delete (key) {
     this._actions.push({
       type: 'delete',
-      key: key
+      key
     })
 
     return this._getOrStartCommit()
